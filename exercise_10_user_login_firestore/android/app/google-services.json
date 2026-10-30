@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "625231170592",
+    "project_id": "flutter-lab-exercise-10",
+    "storage_bucket": "flutter-lab-exercise-10.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:625231170592:android:fb21f6c0738ecb7e750045",
+        "android_client_info": {
+          "package_name": "com.gvasu2023.exercise_10_user_login_firestore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBn9dryLrM60I3U2duwfnFMQH3Tl0eawXg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
