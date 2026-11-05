@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:exercise_7_bank_account_manager/main.dart';
-import 'package:exercise_7_bank_account_manager/database_helper.dart';
+import 'package:exercise_6_sqlite_persistence/main.dart';
+import 'package:exercise_6_sqlite_persistence/database_helper.dart';
 
 class FakeAccountStore implements AccountStore {
   final List<Map<String, dynamic>> accounts = [];
@@ -11,10 +10,7 @@ class FakeAccountStore implements AccountStore {
 
   @override
   Future<int> insertAccount(Map<String, dynamic> account) async {
-    accounts.add({
-      'id': nextId++,
-      ...account,
-    });
+    accounts.add({'id': nextId++, ...account});
     return nextId - 1;
   }
 
@@ -27,15 +23,15 @@ class FakeAccountStore implements AccountStore {
   Future<double> getTotalBalance() async {
     return accounts.fold<double>(
       0,
-      (sum, account) =>
-          sum + (account['balance'] as num).toDouble(),
+      (sum, account) => sum + (account['balance'] as num).toDouble(),
     );
   }
 }
 
 void main() {
-  testWidgets('Bank Account Manager displays correctly',
-      (WidgetTester tester) async {
+  testWidgets('Bank Account Manager displays correctly', (
+    WidgetTester tester,
+  ) async {
     final store = FakeAccountStore();
 
     await tester.pumpWidget(BankAccountApp(store: store));
@@ -55,44 +51,37 @@ void main() {
     expect(find.text('No accounts added yet.'), findsOneWidget);
   });
 
-  testWidgets('Account can be saved and total is calculated',
-      (WidgetTester tester) async {
+  testWidgets('Account can be saved and total is calculated', (
+    WidgetTester tester,
+  ) async {
     final store = FakeAccountStore();
 
     await tester.pumpWidget(BankAccountApp(store: store));
     await tester.pumpAndSettle();
 
     // First field: Account Holder Name.
-    await tester.enterText(
-      find.byType(TextField).at(0),
-      'John',
-    );
+    await tester.enterText(find.byType(TextField).at(0), 'John');
 
     // Second field: Initial Balance.
-    await tester.enterText(
-      find.byType(TextField).at(1),
-      '5000',
-    );
+    await tester.enterText(find.byType(TextField).at(1), '5000');
 
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
     expect(find.text('John'), findsOneWidget);
-    expect(find.text('Balance: ₹5000.00'), findsOneWidget);
-    expect(find.text('₹5000.00'), findsOneWidget);
+    expect(find.text('Balance: \u20B95000.00'), findsOneWidget);
+    expect(find.text('\u20B95000.00'), findsOneWidget);
     expect(find.text('Account saved successfully!'), findsOneWidget);
 
     expect(store.accounts.length, 1);
   });
 
-  testWidgets('Zero balance displays Low Balance warning',
-      (WidgetTester tester) async {
+  testWidgets('Zero balance displays Low Balance warning', (
+    WidgetTester tester,
+  ) async {
     final store = FakeAccountStore();
 
-    await store.insertAccount({
-      'accountHolder': 'Joel',
-      'balance': 0.0,
-    });
+    await store.insertAccount({'accountHolder': 'Joel', 'balance': 0.0});
 
     await tester.pumpWidget(BankAccountApp(store: store));
     await tester.pumpAndSettle();
@@ -101,8 +90,7 @@ void main() {
     expect(find.text('Low Balance!'), findsOneWidget);
   });
 
-  testWidgets('Invalid input is rejected',
-      (WidgetTester tester) async {
+  testWidgets('Invalid input is rejected', (WidgetTester tester) async {
     final store = FakeAccountStore();
 
     await tester.pumpWidget(BankAccountApp(store: store));

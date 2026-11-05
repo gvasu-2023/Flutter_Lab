@@ -1,19 +1,23 @@
-
 import 'package:flutter/material.dart';
+
 import 'database_helper.dart';
 
-void main() {
+import 'database_setup_stub.dart'
+    if (dart.library.html) 'database_setup_web.dart'
+    as database_setup;
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await database_setup.initializeDatabasePlatform();
+
   runApp(const BankAccountApp());
 }
 
 class BankAccountApp extends StatelessWidget {
   final AccountStore? store;
 
-  const BankAccountApp({
-    super.key,
-    this.store,
-  });
+  const BankAccountApp({super.key, this.store});
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +25,7 @@ class BankAccountApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Bank Account Manager',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
       home: BankAccountScreen(store: store),
@@ -34,22 +36,16 @@ class BankAccountApp extends StatelessWidget {
 class BankAccountScreen extends StatefulWidget {
   final AccountStore? store;
 
-  const BankAccountScreen({
-    super.key,
-    this.store,
-  });
+  const BankAccountScreen({super.key, this.store});
 
   @override
-  State<BankAccountScreen> createState() =>
-      _BankAccountScreenState();
+  State<BankAccountScreen> createState() => _BankAccountScreenState();
 }
 
 class _BankAccountScreenState extends State<BankAccountScreen> {
-  final TextEditingController _nameController =
-      TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
 
-  final TextEditingController _balanceController =
-      TextEditingController();
+  final TextEditingController _balanceController = TextEditingController();
 
   late final AccountStore _store;
 
@@ -85,37 +81,27 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Unable to load accounts: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Unable to load accounts: $e')));
     }
   }
 
   Future<void> _saveAccount() async {
     final name = _nameController.text.trim();
 
-    final balance = double.tryParse(
-      _balanceController.text.trim(),
-    );
+    final balance = double.tryParse(_balanceController.text.trim());
 
     if (name.isEmpty || balance == null || balance < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Enter a valid account holder name and balance.',
-          ),
+          content: Text('Enter a valid account holder name and balance.'),
         ),
       );
       return;
     }
 
     try {
-      await _store.insertAccount({
-        'accountHolder': name,
-        'balance': balance,
-      });
+      await _store.insertAccount({'accountHolder': name, 'balance': balance});
 
       _nameController.clear();
       _balanceController.clear();
@@ -125,18 +111,13 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account saved successfully!'),
-        ),
+        const SnackBar(content: Text('Account saved successfully!')),
       );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Unable to save account: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Unable to save account: $e')));
     }
   }
 
@@ -156,9 +137,7 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -175,10 +154,7 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
                   const Text(
                     'Simple Bank Account Manager',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 23,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 24),
@@ -196,8 +172,7 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
 
                   TextField(
                     controller: _balanceController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                     decoration: const InputDecoration(
@@ -224,10 +199,7 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
 
                   const Text(
                     'Account Details',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 10),
@@ -243,41 +215,30 @@ class _BankAccountScreenState extends State<BankAccountScreen> {
                   else
                     ListView.builder(
                       shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: _accounts.length,
                       itemBuilder: (context, index) {
                         final account = _accounts[index];
 
-                        final balance =
-                            (account['balance'] as num)
-                                .toDouble();
+                        final balance = (account['balance'] as num).toDouble();
 
                         final isLowBalance = balance == 0;
 
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor:
-                                  Colors.indigo.shade100,
+                              backgroundColor: Colors.indigo.shade100,
                               child: const Icon(
                                 Icons.person,
                                 color: Colors.indigo,
                               ),
                             ),
-                            title: Text(
-                              account['accountHolder'].toString(),
-                            ),
+                            title: Text(account['accountHolder'].toString()),
                             subtitle: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Account ID: ${account['id']}',
-                                ),
-                                Text(
-                                  'Balance: ₹${balance.toStringAsFixed(2)}',
-                                ),
+                                Text('Account ID: ${account['id']}'),
+                                Text('Balance: ₹${balance.toStringAsFixed(2)}'),
                                 if (isLowBalance)
                                   const Text(
                                     'Low Balance!',

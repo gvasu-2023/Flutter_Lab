@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 abstract class AccountStore {
   Future<int> insertAccount(Map<String, dynamic> account);
@@ -12,8 +14,7 @@ abstract class AccountStore {
 class DatabaseHelper implements AccountStore {
   DatabaseHelper._privateConstructor();
 
-  static final DatabaseHelper instance =
-      DatabaseHelper._privateConstructor();
+  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   static Database? _database;
 
@@ -25,8 +26,19 @@ class DatabaseHelper implements AccountStore {
   }
 
   Future<Database> _initDatabase() async {
-    final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'bank_accounts.db');
+    final String path;
+
+    if (kIsWeb) {
+      // Initialize the SQLite implementation for Chrome.
+      databaseFactory = databaseFactoryFfiWeb;
+
+      // Browser database is persisted using IndexedDB.
+      path = 'bank_accounts_web.db';
+    } else {
+      // Native Android/iOS SQLite database.
+      final databasePath = await getDatabasesPath();
+      path = join(databasePath, 'bank_accounts.db');
+    }
 
     return openDatabase(
       path,
